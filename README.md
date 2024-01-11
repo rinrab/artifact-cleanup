@@ -1,4 +1,4 @@
-# Simple tool to delete all GitHub Artifacts
+# Simple tool for deleting all GitHub Artifacts from repository
 
 ## Usage
 
