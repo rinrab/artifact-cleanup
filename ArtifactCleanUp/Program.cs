@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Net.Http;
-using System;
 using System.Net.Http.Headers;
-using System.Text.Json.Serialization;
+using System;
 using System.Threading.Tasks;
-using System.Text.Json;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Json;
+using System.IO;
+using System.Text;
 
 namespace ArtifactCleanUp
 {
@@ -60,7 +62,7 @@ namespace ArtifactCleanUp
             while (true)
             {
                 string url = $"/repos/{repo}/actions/artifacts?per_page={pageSize}&page={pageIndex}";
-                ListArtifactsResponse page = JsonSerializer.Deserialize<ListArtifactsResponse>(await httpClient.GetStringAsync(url));
+                ListArtifactsResponse page = ListArtifactsResponse.Load(await httpClient.GetStringAsync(url));
 
                 if (page != null)
                 {
@@ -86,15 +88,27 @@ namespace ArtifactCleanUp
             await httpClient.DeleteAsync($"repos/{repo}/actions/artifacts/{id}");
         }
 
+        [DataContract]
         public class ListArtifactsResponse
         {
-            [JsonPropertyName("artifacts")]
+            [DataMember(Name = "artifacts")]
             public Artifact[] Artifacts { get; set; }
+
+            public static ListArtifactsResponse Load(string str)
+            {
+                DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(ListArtifactsResponse));
+
+                using (MemoryStream stream = new MemoryStream(Encoding.UTF8.GetBytes(str)))
+                {
+                    return (ListArtifactsResponse)serializer.ReadObject(stream);
+                }
+            }
         }
 
+        [DataContract]
         public class Artifact
         {
-            [JsonPropertyName("id")]
+            [DataMember(Name = "id")]
             public int Id { get; set; }
         }
     }
