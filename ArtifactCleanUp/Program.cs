@@ -1,6 +1,10 @@
-﻿using System.Net.Http.Headers;
-using System.Net.Http.Json;
+﻿using System.Collections.Generic;
+using System.Net.Http;
+using System;
+using System.Net.Http.Headers;
 using System.Text.Json.Serialization;
+using System.Threading.Tasks;
+using System.Text.Json;
 
 namespace ArtifactCleanUp
 {
@@ -13,10 +17,10 @@ namespace ArtifactCleanUp
             Console.WriteLine();
 
             Console.Write("Enter your access token (ghp_***): ");
-            string token = Console.ReadLine()!;
+            string token = Console.ReadLine();
 
             Console.Write("Enter repository (owner/repo): ");
-            string repo = Console.ReadLine()!;
+            string repo = Console.ReadLine();
 
             using (HttpClient httpClient = new HttpClient())
             {
@@ -49,14 +53,14 @@ namespace ArtifactCleanUp
 
         private static async Task<List<Artifact>> ListArtifacts(HttpClient httpClient, string repo)
         {
-            List<Artifact> rv = [];
+            List<Artifact> rv = new List<Artifact>();
             int pageIndex = 1;
             int pageSize = 100;
 
             while (true)
             {
                 string url = $"/repos/{repo}/actions/artifacts?per_page={pageSize}&page={pageIndex}";
-                ListArtifactsResponse? page = await httpClient.GetFromJsonAsync<ListArtifactsResponse>(url);
+                ListArtifactsResponse page = JsonSerializer.Deserialize<ListArtifactsResponse>(await httpClient.GetStringAsync(url));
 
                 if (page != null)
                 {
@@ -85,13 +89,13 @@ namespace ArtifactCleanUp
         public class ListArtifactsResponse
         {
             [JsonPropertyName("artifacts")]
-            public required Artifact[] Artifacts { get; set; }
+            public Artifact[] Artifacts { get; set; }
         }
 
         public class Artifact
         {
             [JsonPropertyName("id")]
-            public required int Id { get; set; }
+            public int Id { get; set; }
         }
     }
 }
