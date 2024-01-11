@@ -1,4 +1,6 @@
-# Simple tool for deleting all GitHub Artifacts from repository
+# artifact-cleanup
+
+A simple tool for deleting all GitHub Artifacts from repository.
 
 ## Usage
 
